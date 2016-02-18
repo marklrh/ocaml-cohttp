@@ -69,6 +69,10 @@ Flag async
   Description: build the Core/Async library
   Default$:    flag(all)
 
+Flag effect
+  Description: build the effect library
+  Default$:    flag(all)
+
 Flag js
   Description: build the Javascript XHR client library
   Default$:    flag(all)
@@ -119,6 +123,12 @@ Library cohttp_async
   FindlibParent: cohttp
   BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0), magic-mime
   Modules:       Cohttp_async_io, Cohttp_async
+
+Library cohttp_effect
+  Path:          effect
+  Findlibname:   effect
+  BuildDepends:  uri, cohttp, threads
+  Modules:       Cohttp_effect_io, Cohttp_effect
 
 Library cohttp_lwt_unix_test
   Build$:        flag(lwt_unix) && flag(tests)
