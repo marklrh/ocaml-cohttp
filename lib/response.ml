@@ -14,22 +14,20 @@
  *
   }}}*)
 
-open Sexplib.Std
-
 type t = {
   encoding: Transfer.encoding;
   headers: Header.t;
   version: Code.version;
   status: Code.status_code;
   flush: bool;
-} with fields, sexp
+}
 
 let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
   let headers = match headers with None -> Header.init () |Some h -> h in
   { encoding; headers; version; flush; status }
 
 let pp_hum ppf r =
-  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
+  Format.fprintf ppf "%s" "REMOVED" (* r |> sexp_of_t |> Sexplib.Sexp.to_string_hum) *)
 
 type tt = t
 module Make(IO : S.IO) = struct
@@ -67,13 +65,13 @@ module Make(IO : S.IO) = struct
        return (`Ok { encoding; headers; version; status; flush })
 
   let allowed_body response = (* rfc7230#section-5.7.1 *)
-    match status response with
+    match response.status with
     | #Code.informational_status | `No_content | `Not_modified -> false
     | #Code.status_code -> true
 
   let has_body response =
     if allowed_body response
-    then Transfer.has_body (encoding response)
+    then Transfer.has_body (response.encoding)
     else `No
 
   let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic

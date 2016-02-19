@@ -17,26 +17,24 @@
 
 (** Type definitions for the {!Accept} module *)
 
-open Sexplib.Std
-
-type pv = T of string | S of string with sexp
-type p = string * pv with sexp
+type pv = T of string | S of string
+type p = string * pv
 type media_range =
   | MediaType of string * string
   | AnyMediaSubtype of string
-  | AnyMedia with sexp
+  | AnyMedia
 type charset =
   | Charset of string
-  | AnyCharset with sexp
+  | AnyCharset
 type encoding =
   | Encoding of string
   | Gzip
   | Compress
   | Deflate
   | Identity
-  | AnyEncoding with sexp
+  | AnyEncoding
 type language =
   | Language of string list
-  | AnyLanguage with sexp
-type q = int with sexp
-type 'a qlist = (q * 'a) list with sexp
+  | AnyLanguage
+type q = int
+type 'a qlist = (q * 'a) list

@@ -14,15 +14,13 @@
  *
   }}}*)
 
-open Sexplib.Std
-
 type t = {
   headers: Header.t;
   meth: Code.meth;
   uri: Uri.t;
   version: Code.version;
   encoding: Transfer.encoding;
-} with fields, sexp
+}
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers =
@@ -70,7 +68,7 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri 
   make ~meth ~encoding ?headers uri
 
 let pp_hum ppf r =
-  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
+  Format.fprintf ppf "%s" ("REMOVED") (* r |> sexp_of_t |> Sexplib.Sexp.to_string_hum) *)
 
 type tt = t
 module Make(IO : S.IO) = struct

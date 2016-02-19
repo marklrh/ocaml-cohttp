@@ -29,11 +29,9 @@ Library cohttp
                  Accept, Accept_parser, Accept_lexer, Accept_types, Link,
                  Auth, Header_io, Transfer_io, Connection, Body, String_io, Conf
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
-                 fieldslib (>= 109.20.00), fieldslib.syntax,
-                 sexplib (>= 109.53.00), sexplib.syntax,
                  bytes, base64 (>= 2.0.0)
-  XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib,
-                 sexplib, bytes, base64
+  XMETARequires: re.emacs, stringext, uri, uri.services,
+                 bytes, base64
 
 Library cohttp_test
   Build$:        flag(tests)
@@ -71,7 +69,7 @@ Flag async
 
 Flag effect
   Description: build the effect library
-  Default$:    flag(all)
+  Default:    true
 
 Flag js
   Description: build the Javascript XHR client library
@@ -125,9 +123,11 @@ Library cohttp_async
   Modules:       Cohttp_async_io, Cohttp_async
 
 Library cohttp_effect
+  Build$:        flag(effect)
+  Install$:      flag(effect)
   Path:          effect
   Findlibname:   effect
-  BuildDepends:  uri, cohttp, threads
+  BuildDepends:  uri, cohttp
   Modules:       Cohttp_effect_io, Cohttp_effect
 
 Library cohttp_lwt_unix_test

@@ -17,7 +17,7 @@
 
 (** Connection identifiers. *)
 
-type t with sexp
+type t
 (** Abstract type for connection identifiers. *)
 
 val create : unit -> t

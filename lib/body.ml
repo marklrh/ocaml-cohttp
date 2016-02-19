@@ -14,13 +14,11 @@
  *
   }}}*)
 
-open Sexplib.Std
-
 type t = [
   | `Empty
   | `String of string
   | `Strings of string list
-] with sexp
+]
 
 let empty = `Empty
 

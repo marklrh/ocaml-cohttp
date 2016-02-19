@@ -1,5 +1,4 @@
-(*{{{ Copyright (c) 2014 Rudi Grinberg
- * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
+(*{{{ Copyright (c) 2016 Runhang Li <obj@posteo.de>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,19 +13,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
   }}}*)
-
-(** HTTP request and response body handling *)
-
-(** Every HTTP body can at least be an empty value or a [string] *)
-type t = [
-  | `Empty
-  | `String of string
-  | `Strings of string list
-]
-
-(** Signature for the core of HTTP body handling.  Implementations
-    will extend this signature to add more functions for streaming
-    responses via backend-specific functionality.  *)
-include S.Body with type t := t
-
-val length : t -> int64
+open Cohttp

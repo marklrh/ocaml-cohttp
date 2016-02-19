@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: d1b566448b82128ce6bc454b7a02392b)
+version = "0.19.3"
+description = "HTTP library for Lwt, Async, JavaScript and Mirage"
+requires = "uri cohttp"
+archive(byte) = "cohttp_effect.cma"
+archive(byte, plugin) = "cohttp_effect.cma"
+archive(native) = "cohttp_effect.cmxa"
+archive(native, plugin) = "cohttp_effect.cmxs"
+exists_if = "cohttp_effect.cma"
+# OASIS_STOP
+

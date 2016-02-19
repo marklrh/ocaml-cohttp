@@ -14,9 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
   }}}*)
-open Sexplib.Std
-
-type t = int with sexp
+type t = int
 
 let to_string = string_of_int
 

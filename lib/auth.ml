@@ -14,17 +14,16 @@
  *
   }}}*)
 
-open Sexplib.Std
 open Printf
 
 type challenge = [
  | `Basic of string (* realm *)
-] with sexp
+]
 
 type credential = [
  | `Basic of string * string (* username, password *)
  | `Other of string
-]  with sexp
+]
 
 let string_of_credential (cred:credential) =
   match cred with
