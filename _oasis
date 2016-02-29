@@ -57,15 +57,15 @@ Flag all
 
 Flag lwt
   Description: build the Lwt library
-  Default$:    flag(all)
+  Default$:    false
 
 Flag lwt_unix
   Description: build the Lwt-unix library
-  Default$:    flag(all)
+  Default$:    false
 
 Flag async
   Description: build the Core/Async library
-  Default$:    flag(all)
+  Default$:    false
 
 Flag effect
   Description: build the effect library
@@ -73,15 +73,15 @@ Flag effect
 
 Flag js
   Description: build the Javascript XHR client library
-  Default$:    flag(all)
+  Default$:    false
 
 Flag nettests
   Description: run the internet-using tests
-  Default$:    flag(all)
+  Default$:    false
 
 Flag async_s3_example
   Description: build the async s3 example
-  Default$:    flag(all)
+  Default$:    false
 
 Library cohttp_lwt
   Build$:        flag(lwt)

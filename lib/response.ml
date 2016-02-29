@@ -29,7 +29,14 @@ let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.C
 let pp_hum ppf r =
   Format.fprintf ppf "%s" "REMOVED" (* r |> sexp_of_t |> Sexplib.Sexp.to_string_hum) *)
 
+let encoding t = t.encoding
+let headers t = t.headers
+let version t = t.version
+let status t = t.status
+let flush t = t.flush
+
 type tt = t
+
 module Make(IO : S.IO) = struct
   type t = tt
   module IO = IO
@@ -102,5 +109,80 @@ module Make(IO : S.IO) = struct
     write_header req oc >>= fun () ->
     let writer = make_body_writer ?flush req oc in
     fn writer >>= fun () ->
+    write_footer req oc
+end
+
+module EMake(IO : S.Effect_IO) = struct
+  type t = tt
+  module IO = IO
+  module Header_IO = Header_io.EMake(IO)
+  module Transfer_IO = Transfer_io.EMake(IO)
+  type reader = Transfer_IO.reader
+  type writer = Transfer_IO.writer
+
+  open IO
+
+  let parse_response_fst_line ic =
+    let open Code in
+    match read_line ic with
+    | Some response_line -> begin
+      match Stringext.split response_line ~on:' ' with
+      | version_raw :: code_raw :: _ -> begin
+         match version_of_string version_raw with
+         | `HTTP_1_0 | `HTTP_1_1 as v -> (`Ok (v, (status_of_code (int_of_string code_raw))))
+         | `Other _ -> (`Invalid ("Malformed response version: " ^ version_raw))
+      end
+      | _ -> (`Invalid ("Malformed response first line: " ^ response_line))
+    end
+    | None -> `Eof
+
+  let read ic =
+    match parse_response_fst_line ic with
+    | `Eof -> `Eof
+    | `Invalid reason as r -> r
+    | `Ok (version, status) ->
+       let headers = Header_IO.parse ic in
+       let encoding = Header.get_transfer_encoding headers in
+       let flush = false in
+       (`Ok { encoding; headers; version; status; flush })
+
+  let allowed_body response = (* rfc7230#section-5.7.1 *)
+    match response.status with
+    | #Code.informational_status | `No_content | `Not_modified -> false
+    | #Code.status_code -> true
+
+  let has_body response =
+    if allowed_body response
+    then Transfer.has_body (response.encoding)
+    else `No
+
+  let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
+  let read_body_chunk = Transfer_IO.read
+
+  let write_header res oc =
+    write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version)
+    (Code.string_of_status res.status));
+    let headers =
+      if allowed_body res
+      then Header.add_transfer_encoding res.headers res.encoding
+      else res.headers in
+    Header_IO.write headers oc
+
+  let make_body_writer ?flush {encoding} oc =
+    Transfer_IO.make_writer ?flush encoding oc
+
+  let write_body = Transfer_IO.write
+
+  let write_footer {encoding} oc =
+    match encoding with
+    |Transfer.Chunked ->
+       (* TODO Trailer header support *)
+       IO.write oc "0\r\n\r\n"
+    |Transfer.Fixed _ | Transfer.Unknown -> ()
+
+  let write ?flush fn req oc =
+    write_header req oc;
+    let writer = make_body_writer ?flush req oc in
+    fn writer;
     write_footer req oc
 end

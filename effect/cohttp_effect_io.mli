@@ -56,5 +56,9 @@ val write : oc -> string -> unit
     [oc]. *)
 val flush : oc -> unit
 
-(** run a sequence of I/O operations *)
+(** run a sequence of non-blocking I/O operations *)
 val run : (unit -> unit) -> unit
+
+module Test : sig
+  val test : unit -> unit
+end

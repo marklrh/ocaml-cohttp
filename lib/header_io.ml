@@ -45,3 +45,29 @@ module Make(IO : S.IO) = struct
   let write headers oc =
     IO.write oc (Header.to_string headers)
 end
+
+module EMake(IO: S.Effect_IO) = struct
+  open IO
+
+  module Transfer_IO = Transfer_io.EMake(IO)
+
+  let rev _k v = List.rev v
+
+  let parse ic =
+    (* consume also trailing "^\r\n$" line *)
+    let rec parse_headers' headers =
+      match read_line ic with
+      |Some "" | None -> Header.map rev headers
+      |Some line -> begin
+          match split_header line with
+          | [hd;tl] ->
+              let header = String.lowercase hd in
+              parse_headers' (Header.add headers header tl);
+          | _ -> headers
+      end
+    in parse_headers' (Header.init ())
+
+  let write headers oc =
+    IO.write oc (Header.to_string headers)
+
+end

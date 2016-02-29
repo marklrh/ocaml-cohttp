@@ -63,6 +63,42 @@ module type IO = sig
   val flush : oc -> unit t
 end
 
+(** The [Effect_IO] module defines the effect I/O interface for reading
+    and writing to Cohttp streams *)
+module type Effect_IO = sig
+
+  (** [ic] represents an input channel *)
+  type ic
+
+  (** [oc] represents an output channel *)
+  type oc
+
+  (** [conn] represents the underlying network flow *)
+  type conn
+
+  (** [read_line ic] will read a single line terminated
+      by CR or CRLF from the input channel [ic].  It returns
+      {!None} if EOF or other error condition is reached. *)
+  val read_line : ic -> string option
+
+  (** [read ic len] will block until a maximum of [len] characters
+      are read from the input channel [ic].  It returns an
+      empty string if EOF or some other error condition occurs
+      on the input channel, and can also return fewer than [len]
+      characters if input buffering is not sufficient to satisfy the
+      request. *)
+  val read : ic -> int -> string
+
+  (** [write oc s] will block until the complete [s] string is
+      written to the output channel [oc]. *)
+  val write : oc -> string -> unit
+
+  (** [flush oc] will return when all previously buffered content
+      from calling {!write} have been written to the output channel
+      [oc]. *)
+  val flush : oc -> unit
+end
+
 module type Http_io = sig
   type t
   type reader
@@ -78,6 +114,23 @@ module type Http_io = sig
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : writer -> string -> unit IO.t
   val write : ?flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
+end
+
+module type Effect_http_io = sig
+  type t
+  type reader
+  type writer
+  module IO : Effect_IO
+
+  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ]
+  val has_body : t -> [ `No | `Unknown | `Yes ]
+  val make_body_writer : ?flush:bool -> t -> IO.oc -> writer
+  val make_body_reader : t -> IO.ic -> reader
+  val read_body_chunk : reader -> Transfer.chunk
+
+  val write_header : t -> IO.oc -> unit
+  val write_body : writer -> string -> unit
+  val write : ?flush:bool -> (writer -> unit) -> t -> IO.oc -> unit
 end
 
 module type Request = sig
@@ -100,6 +153,13 @@ module type Request = sig
     ?chunked:bool ->
     ?body_length:int64 ->
     Code.meth -> Uri.t -> t
+
+  val headers : t -> Header.t
+  val meth : t -> Code.meth
+  val uri : t -> Uri.t
+  val version : t -> Code.version
+  val encoding : t -> Transfer.encoding
+
 end
 
 module type Response = sig
@@ -118,6 +178,12 @@ module type Response = sig
     ?encoding:Transfer.encoding ->
     ?headers:Header.t ->
     unit -> t
+
+  val encoding : t -> Transfer.encoding
+  val headers : t -> Header.t
+  val version : t -> Code.version
+  val status : t -> Code.status_code
+  val flush : t -> bool
 end
 
 module type Body = sig

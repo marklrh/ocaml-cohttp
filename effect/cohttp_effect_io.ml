@@ -53,7 +53,9 @@ module M = struct
         while x.str.[x.pos] != '\n' do
           x.pos <- x.pos + 1
         done;
-        let l = if x.pos > 0 && x.str.[x.pos-1] = '\r' then x.pos-start-1 else x.pos-start in
+        let l = if x.pos > 0 && x.str.[x.pos-1] = '\r' then
+          x.pos-start-1
+        else x.pos-start in
         let s = String.sub x.str start l in
         x.pos <- x.pos + 1;
         Some s
@@ -90,16 +92,16 @@ module M = struct
       let s = read_line ic in
       continue k s
     | effect (Read (ic, n)) k ->
-      let s = read n ic in
+      let s = read ic n in
       continue k s
     | effect (Write (oc, s)) k ->
-      continue k (write s oc)
+      continue k (write oc s)
     | effect (Flush oc) k ->
       continue k (flush oc)
 
   let read_line ic = perform (Readline ic)
-  let read ic n = perform (Read (n, ic))
-  let write oc s = perform (Write (s, oc))
+  let read ic n = perform (Read (ic, n))
+  let write oc s = perform (Write (oc, s))
   let flush oc = perform (Flush oc)
 
 end
@@ -110,13 +112,13 @@ module Test = struct
 
   let operations () =
     let ic, oc = open_in "abcdefg", Buffer.create 64 in
-    print_endline (read ic 2);
-    print_endline (read ic 2);
+    let s1 = (read ic 2) in
+    let s2 = read ic 2 in
     write oc "123";
-    print_endline (read ic 2);
+    let s3 = read ic 2 in
     write oc "456";
-    print_endline (read ic 2);
-    print_endline (Buffer.contents oc)
+    let s4 = read ic 2 in
+    print_endline (s1 ^ s2 ^ s3 ^ s4)
 
   let test () = run operations
 end

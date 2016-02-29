@@ -18,3 +18,8 @@ module Make(IO : S.IO) : sig
   val parse: IO.ic -> Header.t IO.t
   val write : Header.t -> IO.oc -> unit IO.t
 end
+
+module EMake(IO: S.Effect_IO): sig
+  val parse: IO.ic -> Header.t
+  val write : Header.t -> IO.oc -> unit
+end

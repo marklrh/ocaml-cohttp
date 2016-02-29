@@ -33,3 +33,7 @@ val pp_hum : Format.formatter -> t -> unit
 module Make(IO : S.IO) : S.Http_io
   with type t = t
    and module IO = IO
+
+module EMake(IO : S.Effect_IO) : S.Effect_http_io
+  with type t = t
+   and module IO = IO

@@ -15,6 +15,7 @@
   }}}*)
 
 open Transfer
+
 module Make(IO : S.IO) : sig
   type reader
   type writer
@@ -24,4 +25,15 @@ module Make(IO : S.IO) : sig
 
   val read : reader -> chunk IO.t
   val write : writer -> string -> unit IO.t
+end
+
+module EMake(IO : S.Effect_IO) : sig
+  type reader
+  type writer
+
+  val make_reader : encoding -> IO.ic -> reader
+  val make_writer : ?flush:bool -> encoding -> IO.oc -> writer
+
+  val read : reader -> chunk
+  val write : writer -> string -> unit
 end
