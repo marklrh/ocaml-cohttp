@@ -14,7 +14,6 @@
  *
   }}}*)
 
-
 type buf = {
   str : string;
   mutable pos : int;
@@ -32,7 +31,7 @@ type ic = buf
 type oc = Buffer.t
 
 (** [conn] represents the underlying network flow *)
-type conn
+type conn = unit (* unit here since it doesn't matter *)
 
 (** [read_line ic] will read a single line terminated
     by CR or CRLF from the input channel [ic].  It returns
@@ -57,7 +56,7 @@ val write : oc -> string -> unit
 val flush : oc -> unit
 
 (** run a sequence of non-blocking I/O operations *)
-val run : (unit -> unit) -> unit
+val run : (unit -> 'a) -> 'a
 
 module Test : sig
   val test : unit -> unit

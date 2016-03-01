@@ -22,20 +22,6 @@ module EStream = struct
     stream   : unit -> string option;
   }
 
-  let create_stream fn arg =
-    let fin = ref false in
-    let stream = fun () ->
-      match !fin with
-      | true -> None
-      | false -> begin
-        match fn arg with
-        | Transfer.Done -> None
-        | Transfer.Final_chunk c -> fin := true; Some c
-        | Transfer.Chunk c -> Some c
-        end in
-    {fin; stream}
-
-
   let iter_s fn t =
     let rec loop () =
       match t.stream () with
@@ -50,11 +36,18 @@ module EStream = struct
       | None -> None in
     {fin = t.fin; stream}
 
+  let rec junk t =
+    match t.stream () with
+    | None -> ()
+    | Some c -> ignore c; junk t
+
 end
+
+type estream = EStream.t
 
 type t = [
   | Body.t
-  | `Stream of EStream.t
+  | `Stream of estream
 ]
 
 let empty = (Body.empty :> t)
@@ -112,14 +105,10 @@ let to_stream (body:t) =
   |`Strings sl -> Lwt_stream.of_list sl
 *)
 
-(*
 let drain_body (body:t) =
   match body with
-  |`Empty
-  |`String _
-  |`Strings _ -> return_unit
-  |`Stream s -> Lwt_stream.junk_while (fun _ -> true) s
-*)
+  |`Empty |`String _ |`Strings _ -> ()
+  |`Stream s -> EStream.junk s
 
 let of_string_list l = `Strings l
 
@@ -145,11 +134,9 @@ let write_body fn = function
   |`String s -> fn s
   |`Strings sl -> List.iter fn sl
 
-(*
 let map f t =
   match t with
   | #Body.t as t -> (Body.map f t :> t)
-  | `Stream s -> `Stream (Lwt_stream.map f s)
-*)
+  | `Stream s -> `Stream (EStream.map f s)
 
 

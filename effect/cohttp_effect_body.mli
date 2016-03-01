@@ -14,21 +14,27 @@
  *
   }}}*)
 
-open Cohttp
+type estream
 
-module type IO = S.Effect_IO
+type t = [
+  | Cohttp.Body.t
+  | `Stream of estream
+]
 
-module S : (module type of Cohttp_effect_s)
+include Cohttp.S.Body with type t := t
 
-module type Client = S.Client
-(*
-module type Server = S.Server
-*)
-module type Net = S.Net
+val is_empty : t -> bool
 
-module Request : (Cohttp.S.Request with type t = Cohttp.Request.t)
-module Response : (Cohttp.S.Response with type t = Cohttp.Response.t)
+val to_string : t -> string
+val to_string_list : t -> string list
 
-module Make_client (IO:IO) (Net:Net with module IO = IO) : Client
+(* val to_stream : t -> string Lwt_stream.t *)
+val of_stream : estream -> t
 
-module Client: Client
+val create_stream : ('a -> Cohttp.Transfer.chunk) -> 'a -> estream
+
+val length : t -> (int64 * t)
+
+val write_body : (string -> unit) -> t -> unit
+
+val drain_body : t -> unit

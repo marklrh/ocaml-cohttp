@@ -114,8 +114,8 @@ Library cohttp_lwt_xhr
   Modules:       Cohttp_lwt_xhr
 
 Library cohttp_async
-  Build$:        flag(async)
-  Install$:      flag(async)
+  Build$:        false
+  Install$:      false
   Path:          async
   Findlibname:   async
   FindlibParent: cohttp
@@ -123,12 +123,13 @@ Library cohttp_async
   Modules:       Cohttp_async_io, Cohttp_async
 
 Library cohttp_effect
-  Build$:        flag(effect)
-  Install$:      flag(effect)
+  Build$:        true
+  Install$:      true
   Path:          effect
   Findlibname:   effect
+  FindlibParent: cohttp
   BuildDepends:  uri, cohttp
-  Modules:       Cohttp_effect_io, Cohttp_effect
+  Modules:       Cohttp_effect_body, Cohttp_effect, Cohttp_effect_s, Cohttp_effect_io
 
 Library cohttp_lwt_unix_test
   Build$:        flag(lwt_unix) && flag(tests)

@@ -21,7 +21,9 @@ module type IO = S.Effect_IO
 module S = Cohttp_effect_s
 
 module type Client = S.Client
+(*
 module type Server = S.Server
+*)
 module type Net = S.Net
 
 module EMake_request(IO: IO) = struct
@@ -37,6 +39,26 @@ end
 module Request = Cohttp.Request
 module Response = Cohttp.Response
 
+(* string-based effect I/O Net module *)
+module SENet = struct
+
+  module IO = Cohttp_effect_io
+  let connect_uri uri =
+    let ic = open_in (Uri.to_string uri) in
+    let n = in_channel_length ic in
+    let s = String.create n in
+    really_input ic s 0 n;
+    close_in ic;
+    let inc = IO.open_in s in
+    (), inc, Buffer.create 128
+
+  (* just to satisfy signature ... *)
+  let close_in ic = ()
+  let close_out buf = Buffer.clear buf
+  let close ic oc = close_in ic; close_out oc
+
+end
+
 module Make_client
     (IO: IO)
     (Net:Net with module IO = IO) = struct
@@ -44,9 +66,6 @@ module Make_client
   module IO = IO
   module Response = EMake_response(IO)
   module Request = EMake_request(IO)
-
-  type ctx = Net.ctx
-  let default_ctx = Net.default_ctx
 
   let read_response ~closefn ic oc meth =
     match Response.read ic with
@@ -75,9 +94,9 @@ module Make_client
     | `DELETE -> false
     | _ -> true
 
-  let call ?(ctx=default_ctx) ?headers ?(body=`Empty) ?chunked meth uri =
+  let call ?headers ?(body=`Empty) ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    let conn, ic, oc = Net.connect_uri ~ctx uri in
+    let conn, ic, oc = Net.connect_uri uri in
     let closefn () = Net.close ic oc in
     let chunked =
       match chunked with
@@ -101,24 +120,60 @@ module Make_client
     read_response ~closefn ic oc meth
 
   (* The HEAD should not have a response body *)
-  let head ?ctx ?headers uri =
+  let head ?headers uri =
     fst (call ?headers `HEAD uri)
 
-  let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
-  let delete ?ctx ?body ?chunked ?headers uri =
-    call ?ctx ?headers ?body ?chunked `DELETE uri
-  let post ?ctx ?body ?chunked ?headers uri =
-    call ?ctx ?headers ?body ?chunked `POST uri
-  let put ?ctx ?body ?chunked ?headers uri =
-    call ?ctx ?headers ?body ?chunked `PUT uri
-  let patch ?ctx ?body ?chunked ?headers uri =
-    call ?ctx ?headers ?body ?chunked `PATCH uri
+  let get ?headers uri = call ?headers `GET uri
+  let delete ?body ?chunked ?headers uri =
+    call ?headers ?body ?chunked `DELETE uri
+  let post ?body ?chunked ?headers uri =
+    call ?headers ?body ?chunked `POST uri
+  let put ?body ?chunked ?headers uri =
+    call ?headers ?body ?chunked `PUT uri
+  let patch ?body ?chunked ?headers uri =
+    call ?headers ?body ?chunked `PATCH uri
 
-  let post_form ?ctx ?headers ~params uri =
+  let post_form ?headers ~params uri =
     let headers = Header.add_opt_unless_exists headers
                     "content-type" "application/x-www-form-urlencoded" in
     let body = Body.of_string (Uri.encoded_of_query params) in
-    post ?ctx ~chunked:false ~headers ~body uri
+    post ~chunked:false ~headers ~body uri
+
+  (** run under IO.run *)
+  let call ?headers ?(body=`Empty) ?chunked meth uri =
+    IO.run (fun () ->
+      call ?headers ~body ?chunked meth uri)
+
+  let head ?headers uri =
+    IO.run (fun () ->
+      head ?headers uri)
+
+  let get ?headers uri =
+    IO.run (fun () ->
+      get ?headers uri)
+
+  let delete ?body ?chunked ?headers uri =
+    IO.run (fun () ->
+      delete ?body ?chunked ?headers uri)
+
+  let post ?body ?chunked ?headers uri =
+    IO.run (fun () ->
+      post ?body ?chunked ?headers uri)
+
+  let put ?body ?chunked ?headers uri =
+    IO.run (fun () ->
+      put ?body ?chunked ?headers uri)
+
+  let patch ?body ?chunked ?headers uri =
+    IO.run (fun () ->
+      patch ?body ?chunked ?headers uri)
+
+  let post_form ?headers ~params uri =
+    IO.run (fun () ->
+      post_form ?headers ~params uri)
+
+  (* not sure about callv *)
 
 end
 
+module Client = Make_client(Cohttp_effect_io)(SENet)

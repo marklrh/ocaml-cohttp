@@ -29,14 +29,14 @@ let open_in str =
 
 module M = struct
 
-  type conn = buf
+  type conn = unit
   type ic = buf
 
   (* output channels are just buffers *)
   type oc = Buffer.t
 
   effect Readline : ic -> string option
-  effect Read : ic * int -> string (* CR: severe type inference error... *)
+  effect Read : ic * int -> string
   effect Write: oc * string -> unit
   effect Flush: oc -> unit
 
@@ -86,7 +86,7 @@ module M = struct
 
   let run f =
     match f () with
-    | () -> ()
+    | r -> r
     | exception End_of_file -> raise End_of_file
     | effect (Readline ic) k ->
       let s = read_line ic in

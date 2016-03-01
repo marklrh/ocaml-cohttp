@@ -12,9 +12,7 @@ module type IO = S.Effect_IO
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : IO
-  type ctx
-  val default_ctx: ctx
-  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) (* CR: may need new effect? *)
+  val connect_uri : Uri.t -> (IO.conn * IO.ic * IO.oc) (* CR: may need new effect? *)
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -28,71 +26,49 @@ end
     up, but this can take some additional time to happen. *)
 module type Client = sig
 
-  type ctx
-  val default_ctx : ctx
-
-  (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
-    [uri] to a concrete network endpoint using the resolver initialized
-    in [ctx].  It will then issue an HTTP request with method [meth],
-    adding request headers from [headers] if present.  If a [body]
-    is specified then that will be included with the request, using
-    chunked encoding if [chunked] is true.  The default is to disable
-    chunked encoding for HTTP request bodies for compatibility reasons.
-
-    In most cases you should use the more specific helper calls in the
-    interface rather than invoke this function directly.  See {!head},
-    {!get} and {!post} for some examples. *)
   val call :
-    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    ?body:Body.t ->
+    ?body:Cohttp_effect_body.t ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
   val head :
-    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> Response.t
 
   val get :
-    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
   val delete :
-    ?ctx:ctx ->
-    ?body:Body.t ->
+    ?body:Cohttp_effect_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
   val post :
-    ?ctx:ctx ->
-    ?body:Body.t ->
+    ?body:Cohttp_effect_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
   val put :
-    ?ctx:ctx ->
-    ?body:Body.t ->
+    ?body:Cohttp_effect_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
   val patch :
-    ?ctx:ctx ->
-    ?body:Body.t ->
+    ?body:Cohttp_effect_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
   val post_form :
-    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:(string * string list) list ->
-    Uri.t -> (Response.t * Body.t)
+    Uri.t -> (Response.t * Cohttp_effect_body.t)
 
 (*
   val callv :
@@ -104,6 +80,7 @@ module type Client = sig
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
+(*
 module type Server = sig
   module IO : IO
 
@@ -157,3 +134,4 @@ module type Server = sig
   val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit
 
 end
+*)
