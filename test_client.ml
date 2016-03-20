@@ -6,12 +6,8 @@ open Cohttp_effect
 let parse () =
   let open Cohttp_effect in
   let file =
-    Uri.of_string "~/test_file.txt" in
-  Client.get file
+    Uri.of_string "./test1.txt" in
+  let r, b = Client.get file in
+  Printf.printf "%Ld\n" (fst (Cohttp_effect_body.length b))
 
-let print b =
-  let open Cohttp_effect_body in
-  print_endline (to_string b)
-
-let () = parse () |> print body
-
+let () = parse ()

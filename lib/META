@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: d37a7f3cb29a259e7661ca3a5f510952)
+# DO NOT EDIT (digest: 17bbe598dddd04de26b4910a0c0cdc9c)
 version = "0.19.3"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires = "re.emacs stringext uri uri.services bytes base64"
@@ -72,6 +72,17 @@ package "js" (
  archive(native) = "cohttp_lwt_xhr.cmxa"
  archive(native, plugin) = "cohttp_lwt_xhr.cmxs"
  exists_if = "cohttp_lwt_xhr.cma"
+)
+
+package "effect" (
+ version = "0.19.3"
+ description = "HTTP library for Lwt, Async, JavaScript and Mirage"
+ requires = "uri cohttp"
+ archive(byte) = "cohttp_effect.cma"
+ archive(byte, plugin) = "cohttp_effect.cma"
+ archive(native) = "cohttp_effect.cmxa"
+ archive(native, plugin) = "cohttp_effect.cmxs"
+ exists_if = "cohttp_effect.cma"
 )
 
 package "async-test" (

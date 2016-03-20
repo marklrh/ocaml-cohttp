@@ -188,7 +188,7 @@ module EMake (IO: S.Effect_IO) = struct
 
     let rec junk_until_empty_line ic =
       match read_line ic with
-      | None | Some "" -> Done
+      | None | Some "" -> print_endline "junk189"; Done
       | Some _trailer -> junk_until_empty_line ic
 
     let read ~remaining ic () =
@@ -199,27 +199,27 @@ module EMake (IO: S.Effect_IO) = struct
         let _ =
           (if !remaining = 0L (* End_of_chunk *)
            then read_line ic (* Junk the CRLF at end of chunk *)
-           else None) in
+            else (print_endline "none202"; None)) in
         chunk
       in
       if !remaining = 0L then
         (* Beginning of a chunk: read chunk size, read up to 32K bytes *)
         match read_line ic with
-        | None -> Done
+        | None -> print_endline "done208"; Done
         | Some chunk_size_hex -> begin
             match parse_chunksize chunk_size_hex with
-            | None -> Done
+            | None -> print_endline "done211"; Done
             | Some 0L -> (* TODO: Trailer header support *)
               junk_until_empty_line ic
             | Some count ->
               remaining := count;
               match read_chunk_fragment () with
-              | "" -> Done (* 0 bytes read means EOF *)
+              | "" -> print_endline "done217"; Done (* 0 bytes read means EOF *)
               | buf -> Chunk buf
           end
       else (* Middle of a chunk, read up to 32K bytes *)
         match read_chunk_fragment () with
-        | "" -> Done (* 0 bytes read means EOF *)
+        | "" -> print_endline "done222"; Done (* 0 bytes read means EOF *)
         | buf -> Chunk buf
 
     let write oc buf =

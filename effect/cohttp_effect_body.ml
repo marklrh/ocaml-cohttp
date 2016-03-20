@@ -16,6 +16,8 @@
 
 open Cohttp
 
+module IO = Cohttp_effect_io
+
 module EStream = struct
   type t = {
     fin : bool ref;
@@ -60,7 +62,7 @@ let create_stream fn arg =
     | true -> None
     | false -> begin
       match fn arg with
-      | Transfer.Done -> None
+      | Transfer.Done -> fin := true; None
       | Transfer.Final_chunk c -> fin := true; Some c
       | Transfer.Chunk c -> Some c
       end in
@@ -75,6 +77,7 @@ let to_string (body:t) =
   match body with
   | #Body.t as body -> Body.to_string body
   |`Stream s -> begin
+    let s = (s : estream) in
     let b = Buffer.create 1024 in
     let rec loop () =
       match s.stream () with
@@ -83,6 +86,9 @@ let to_string (body:t) =
     loop ();
     Buffer.contents b
     end
+
+let to_string (body:t) =
+  IO.run (fun () -> to_string body)
 
 let to_string_list (body:t) =
   match body with
@@ -95,15 +101,6 @@ let to_string_list (body:t) =
     loop []
 
 let of_string s = ((Body.of_string s) :> t)
-
-(*
-let to_stream (body:t) =
-  match body with
-  |`Empty -> Lwt_stream.of_list []
-  |`Stream s -> s
-  |`String s -> Lwt_stream.of_list [s]
-  |`Strings sl -> Lwt_stream.of_list sl
-*)
 
 let drain_body (body:t) =
   match body with

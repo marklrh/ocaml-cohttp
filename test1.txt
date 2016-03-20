@@ -1,0 +1,13 @@
+HTTP/1.1 302 Found
+Cache-Control: private
+Content-Type: text/html; charset=UTF-8
+Location: http://www.google.co.jp/?gfe_rd=cr&ei=l4vuVoSaLKXU8Ae01YHQAQ
+Content-Length: 261
+Date: Sun, 20 Mar 2016 11:37:59 GMT
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>302 Moved</TITLE></HEAD><BODY>
+<H1>302 Moved</H1>
+The document has moved
+<A HREF="http://www.google.co.jp/?gfe_rd=cr&amp;ei=l4vuVoSaLKXU8Ae01YHQAQ">here</A>.
+</BODY></HTML>

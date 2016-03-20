@@ -62,7 +62,7 @@ module M = struct
       with _ ->
         Some (read_rest x)
     else
-      None
+      (print_endline "Cohttp_effect_io: None"; None)
 
   let read_line x = read_line' x
 

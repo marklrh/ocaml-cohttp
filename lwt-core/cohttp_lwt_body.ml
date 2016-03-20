@@ -16,13 +16,11 @@
 
 open Cohttp
 open Lwt
-open Sexplib.Std
-open Sexplib.Conv
 
 type t = [
   | Body.t
-  | `Stream of string Lwt_stream.t sexp_opaque
-] with sexp
+  | `Stream of string Lwt_stream.t
+]
 
 let empty = (Body.empty :> t)
 

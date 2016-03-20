@@ -97,6 +97,8 @@ module type Effect_IO = sig
       from calling {!write} have been written to the output channel
       [oc]. *)
   val flush : oc -> unit
+
+  val run : (unit -> 'a) -> 'a
 end
 
 module type Http_io = sig
@@ -114,6 +116,7 @@ module type Http_io = sig
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : writer -> string -> unit IO.t
   val write : ?flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
+
 end
 
 module type Effect_http_io = sig
